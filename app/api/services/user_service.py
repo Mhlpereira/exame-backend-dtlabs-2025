@@ -11,14 +11,23 @@ class UserService:
         return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
 
 
-    def verify_password(password: str, hashed_password: str) -> bool:
+    def confirm_password(password: str, hashed_password: str) -> bool:
         return bcrypt.checkpw(password.encode("utf-8"), hashed_password.encode("utf-8"))
 
     async def create_user(data: CreateUserDTO) -> UserModel:
         hashed_password = UserService.hash_password(data.password)
-        confirm = UserService.verify_password(data.password, hashed_password)
+        confirm = UserService.confirm_password(data.password, hashed_password)
         if confirm == False:
             raise Exception("Error encrypting password")
         else:
             user = UserRepository.create_user(data.email, hashed_password)
         return user
+
+
+    async def verify_password(email: str, password: str) -> UserModel:
+        user = await UserRepository.get_user_by_email(email)
+        confirm_password = await UserService.confirm_password(password, user.password)
+        if confirm_password == True:
+            return user
+        else:
+            raise Exception("Email or password incorrect")

@@ -1,5 +1,7 @@
 from fastapi import APIRouter
+from app.api.services.auth_service import AuthService
 from app.api.services.user_service import UserService
+from app.schemas.login_dto import LoginDTO, TokenDTO
 from app.schemas.user_dto import CreateUserDTO, OutputUserDTO
 
 class AuthEndpoint:
@@ -13,4 +15,7 @@ class AuthEndpoint:
         return OutputUserDTO(email=user.email)
     
     @router.post("/login")
-    async def login(data: LoginDto) -> 
+    async def login(data: LoginDTO) -> TokenDTO:
+        token = await AuthService.authenticate(data.email, data.password)
+        return TokenDTO(token=token, token_type="bearer")
+
