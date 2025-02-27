@@ -17,5 +17,5 @@ class AuthEndpoint:
     @router.post("/login")
     async def login(data: LoginDTO) -> TokenDTO:
         token = await AuthService.authenticate(data.email, data.password)
-        return TokenDTO(token=token, token_type="bearer")
+        return TokenDTO(access_token=token, token_type="bearer")
 

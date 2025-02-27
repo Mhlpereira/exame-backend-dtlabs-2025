@@ -6,8 +6,4 @@ class UserEndpoint():
 
     router = APIRouter(prefix="/user", tags="Users")
 
-    @router.post("/create")
-    async def create_user(data: CreateUserDTO) -> OutputUserDTO:
-        user = await UserService.create_user(data.email, data.password)
-
-        return OutputUserDTO(email=user.email)
+   

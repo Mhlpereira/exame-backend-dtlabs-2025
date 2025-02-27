@@ -5,5 +5,5 @@ class LoginDTO(BaseModel):
     password: str
 
 class TokenDTO(BaseModel):
-    token: str
+    access_token: str
     token_type: str

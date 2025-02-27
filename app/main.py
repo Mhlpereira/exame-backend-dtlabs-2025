@@ -2,8 +2,11 @@ from fastapi import FastAPI
 from tortoise.contrib.fastapi import register_tortoise
 import os
 
+from app.middleware import auth_middleware
+
 app =  FastAPI()
 
+app.middleware("http")(auth_middleware)
 
 register_tortoise(
     app,
