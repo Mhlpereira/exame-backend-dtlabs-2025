@@ -2,8 +2,5 @@ from fastapi import APIRouter, FastAPI, Depends
 from app.api.services.user_service import UserService
 from app.schemas.user_dto import CreateUserDTO, OutputUserDTO
 
-class UserEndpoint():
 
-    router = APIRouter(prefix="/user", tags="Users")
-
-   
+router = APIRouter(prefix="/user", tags="Users")

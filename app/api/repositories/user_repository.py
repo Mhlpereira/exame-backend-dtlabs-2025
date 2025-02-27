@@ -1,4 +1,4 @@
-from models.user_model import UserModel
+from app.api.models.user_model import UserModel
 from typing import Optional
 import ulid
 

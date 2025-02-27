@@ -1,6 +1,12 @@
 utilize esse comando para iniciar o servidor 
 
+docker compose up 
+
+python -m app.script.seed
+
+utilize esse comando para iniciar o servidor 
 uvicorn app.main:app
 
+execute o getpaylod para pegar o id do servidor
 
-docker compose up 
+execute o register data passando no body um json { "id" : "PayloadGerado"} sendo o x o valor do payload gerado

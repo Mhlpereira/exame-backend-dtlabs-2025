@@ -7,7 +7,8 @@ ALGORITHM = "HS256"
 
 async def auth_middleware(request: Request, call_next):
     public_routes = [
-        {"path": "/", "methods": ["GET"]},
+        {"path": "/"},
+        {"path": "/getPayload", "methods": ["GET"]},
         {"path": "/docs", "methods": ["GET"]},
         {"path": "/openapi.json", "methods": ["GET"]},
         {"path": "/auth/login", "methods": ["POST"]},

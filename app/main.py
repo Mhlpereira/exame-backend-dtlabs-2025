@@ -4,6 +4,7 @@ from starlette.middleware.base  import BaseHTTPMiddleware
 from tortoise.contrib.fastapi import register_tortoise
 from dotenv import load_dotenv
 from app.middleware.auth_middleware import auth_middleware
+from app.api.endpoints import auth_router , server_router
 
 import os
 
@@ -21,6 +22,9 @@ register_tortoise(
     generate_schemas=True,
     add_exception_handlers=True,
 )
+
+app.include_router(auth_router)
+app.include_router(server_router)
 
 @app.get("/")
 async def hellow():
