@@ -3,8 +3,8 @@ from tortoise import fields
 
 class SensorModel(Model):
 
-    id = fields.CharField(pk = True, unique = True)
-    server_ulid = fields.ForeignKeyField("models.Server", related_name="sensor_data")
+    id = fields.CharField(max_length=36, pk = True, unique = True)
+    server_ulid = fields.ForeignKeyField("models.ServerModel", related_name="sensor_data")
     timestamp = fields.DatetimeField()
     temperature = fields.FloatField(null = True)
     humidity = fields.FloatField(null = True)

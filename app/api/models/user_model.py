@@ -3,7 +3,7 @@ from tortoise import fields
 import ulid
 
 class UserModel(Model):
-    id = fields.CharField(pk = True, unique = True)
+    id = fields.CharField(max_length=36, pk = True, unique = True)
     email = fields.CharField(max_length = 20, unique = True)
     password = fields.CharField(max_length = 255)
 
