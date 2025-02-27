@@ -1,5 +1,5 @@
 
-import datetime
+from datetime import datetime
 from typing import Optional
 from tortoise.exceptions import DoesNotExist
 from app.api.models.server_model import ServerModel

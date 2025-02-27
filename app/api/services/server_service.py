@@ -7,8 +7,8 @@ from app.schemas.server_dto import OutputRegisterDataDTO, PayloadDTO
 class ServerService:
 
     async def register_data(id:str) -> OutputRegisterDataDTO:
-        server_ulid = await ServerRepository.get_server_id(id)
-        timestamp = await SensorService.get_server_date()
+        server_ulid = await ServerService.get_payload_id()
+        timestamp = await ServerService.get_timestamp()
         temperature = await SensorService.get_temperature()
         humidity = await SensorService.get_humidity()
         voltage = await SensorService.get_voltage()
@@ -29,5 +29,10 @@ class ServerService:
         timestamp = await ServerRepository.get_server_date()
         return timestamp
     
-    async def get_payload() -> PayloadDTO:
-        payloadId = await ServerRepository.get_server_id
+    async def get_payload_id()-> str:
+        payload_id = await ServerRepository.get_payload_id()
+        return payload_id
+    
+    async def get_server_id(id:str) -> str:
+        server_id = await ServerRepository.get_server_id(id)
+        return server_id
