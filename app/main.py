@@ -4,9 +4,12 @@ from starlette.middleware.base  import BaseHTTPMiddleware
 from tortoise.contrib.fastapi import register_tortoise
 from dotenv import load_dotenv
 from app.middleware.auth_middleware import auth_middleware
+from app.middleware.frequency_rate_middleware import FrequencyRateMiddleware
 from app.api.endpoints import auth_router , server_router
 
 import os
+
+
 
 
 

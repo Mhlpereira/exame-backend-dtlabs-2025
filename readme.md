@@ -1,6 +1,7 @@
 utilize esse comando para iniciar o servidor 
 
-docker compose up 
+docker compose build 
+docker compose up -d
 
 python -m app.script.seed
 

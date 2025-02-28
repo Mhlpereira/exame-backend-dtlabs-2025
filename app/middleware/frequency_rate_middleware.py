@@ -17,7 +17,7 @@ class FrequencyRateMiddleware:
 
         current_time = time.time()
 
-        if server_luid in self.last_request_time:
+        if server_ulid in self.last_request_time:
             last_time = self.last_request_time[server_ulid]
             interval = current_time - last_time
 
