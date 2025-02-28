@@ -9,6 +9,8 @@ from app.api.endpoints import auth_router , server_router
 
 import os
 
+from app.middleware.get_id_middleware import IdMiddleware
+
 
 
 
@@ -16,6 +18,7 @@ import os
 app =  FastAPI()
 load_dotenv("../.env")
 app.add_middleware(BaseHTTPMiddleware, dispatch=auth_middleware)
+app.add_middleware(IdMiddleware)
 
 
 register_tortoise(
