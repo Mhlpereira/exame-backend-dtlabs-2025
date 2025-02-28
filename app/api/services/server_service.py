@@ -1,7 +1,10 @@
 import datetime
 from typing import Optional
+from app.api.models.server_model import ServerModel
+from app.api.models.user_model import UserModel
 from app.api.repositories.server_repository import ServerRepository
 from app.api.services.sensor_service import SensorService
+from app.api.services.user_service import UserService
 from app.schemas.server_dto import OutputRegisterDataDTO, PayloadDTO
 
 
@@ -15,7 +18,7 @@ class ServerService:
 
     async def register_data(id:str) -> OutputRegisterDataDTO:
         server_ulid = await ServerService.get_payload_id()
-        timestamp = await ServerService.get_timestamp()
+        timestamp = await ServerService.server_time()
         temperature = await SensorService.get_temperature()
         humidity = await SensorService.get_humidity()
         voltage = await SensorService.get_voltage()
@@ -37,8 +40,13 @@ class ServerService:
         
         return sensor_data
 
-    async def get_timestamp()-> datetime:
-        timestamp = await ServerRepository.get_server_date()
+    async def create_server(name:str, userId: str)-> ServerModel:
+        user = await UserService.get_user_by_id(userId)
+        server = await ServerRepository.create_server(name, user)
+        return server
+    
+    async def server_time()-> datetime:
+        timestamp = await ServerRepository.server_time()
         return timestamp
     
     async def get_payload_id()-> str:

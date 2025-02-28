@@ -31,3 +31,7 @@ class UserService:
             return user
         else:
             raise Exception("Email or password incorrect")
+        
+    async def get_user_by_id(id: str) -> UserModel:
+        user = await UserRepository.get_user_by_id(id)
+        return user

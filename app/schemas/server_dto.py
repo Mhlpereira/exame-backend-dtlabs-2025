@@ -13,3 +13,11 @@ class OutputRegisterDataDTO(BaseModel):
 
 class PayloadDTO(BaseModel):
     server_ulid: str
+    
+    
+class OutputCreateServerDTO(BaseModel):
+    server_name: str
+    
+
+class CreateServerDTO(BaseModel):
+    name: str

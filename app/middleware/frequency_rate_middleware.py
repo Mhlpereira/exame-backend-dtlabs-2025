@@ -1,5 +1,5 @@
 from fastapi import Request, HTTPException
-from timescape import Timeline, Interval
+from timescape import Timeline
 import time
 
 
