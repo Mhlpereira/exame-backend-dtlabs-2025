@@ -10,6 +10,8 @@ router = APIRouter(tags=["server"])
 async def register_data() -> OutputRegisterDataDTO:
     id = await ServerService.get_payload_id()
     
-    data = await ServerService.register_data(id)
+    confirmed_id = await ServerService.get_server_id(id)
+    
+    data = await ServerService.register_data(confirmed_id)
     
     return data
