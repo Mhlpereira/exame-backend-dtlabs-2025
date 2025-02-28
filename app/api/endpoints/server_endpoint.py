@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from typing import List
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.services.server_service import ServerService
 from app.middleware.frequency_rate_middleware import FrequencyRateMiddleware
-from app.schemas.server_dto import CreateServerDTO, OutputCreateServerDTO, OutputRegisterDataDTO, PayloadDTO
+from app.middleware.get_id import get_user_id
+from app.schemas.server_dto import CreateServerDTO, ListServerDTO, OutputCreateServerDTO, OutputRegisterDataDTO, PayloadDTO
 
 
 router = APIRouter(tags=["server"])
@@ -10,12 +12,12 @@ router = APIRouter(tags=["server"])
 frequency_limiter = FrequencyRateMiddleware()
 
 @router.post("/data")
-async def register_data(
-    _=Depends(frequency_limiter)
-    ) -> OutputRegisterDataDTO:
-    id = await ServerService.get_payload_id()
-    
-    confirmed_id = await ServerService.get_server_id(id)
+async def register_data(server_ulid: str) -> OutputRegisterDataDTO:
+
+    frequency_limiter.check_rate(server_ulid)
+
+
+    confirmed_id = await ServerService.get_server_id(server_ulid)
     
     if not confirmed_id:
         raise HTTPException(
@@ -27,13 +29,18 @@ async def register_data(
     return data
 
 @router.post("/create-server")
-async def create_server(body: CreateServerDTO, request: Request) -> OutputCreateServerDTO:
-    id = request.state.user_id
-    
-    server = await ServerService.create_server(body.name , id)
+async def create_server(body: CreateServerDTO, user_id: str = Depends(get_user_id)) -> OutputCreateServerDTO:
+        
+    server = await ServerService.create_server(body.name , user_id)
     
     output = OutputCreateServerDTO(
         server_name=server.name
     )
     
-    return server
+    return output
+
+@router.get("/list-servers")
+async def list_server() -> List[ListServerDTO]:
+    
+    servers_list = await ServerService.list_server()
+    return [ListServerDTO(name=server.server_name, server_ulid=server.server_ulid) for server in servers_list]

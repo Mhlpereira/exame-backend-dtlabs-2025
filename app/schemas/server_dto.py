@@ -1,6 +1,8 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+
+from app.schemas.user_dto import OutputUserDTO
 
 
 class OutputRegisterDataDTO(BaseModel):
@@ -21,3 +23,9 @@ class OutputCreateServerDTO(BaseModel):
 
 class CreateServerDTO(BaseModel):
     name: str
+
+class ListServerDTO(BaseModel):
+    name: str
+    server_ulid: str
+
+

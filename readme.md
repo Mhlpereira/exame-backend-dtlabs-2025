@@ -1,6 +1,9 @@
 utilize esse comando para iniciar o servidor 
 
+
 docker compose build 
+
+Utilize o docker compose up -d para subir o container sem travar o terminal.
 docker compose up -d
 
 python -m app.script.seed

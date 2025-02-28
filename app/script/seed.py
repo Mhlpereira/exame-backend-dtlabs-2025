@@ -17,8 +17,8 @@ async def seed():
 
     print(f"User created: {user1.email}, {user2.email}")
 
-    server1 = await ServerModel.create(id='01JN4HCDW7ZF0TFMXWKRFV06GG', server_name="Dolly #1" , user=user1)
-    server2 = await ServerModel.create(id='01JN4HCMRV5GK5VRWR5P5KN1TC', server_name="Dolly #2", user=user2)
+    server1 = await ServerModel.create(server_ulid='01JN4HCDW7ZF0TFMXWKRFV06GG', server_name="Dolly #1" , user=user1)
+    server2 = await ServerModel.create(server_ulid='01JN4HCMRV5GK5VRWR5P5KN1TC', server_name="Dolly #2", user=user2)
     
     print(f"Server created: {server1.server_name}, {server2.server_name}")
     

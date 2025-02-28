@@ -1,20 +1,15 @@
 from fastapi import Request, HTTPException
-from timescape import Timeline
 import time
+import json
 
 
 class FrequencyRateMiddleware:
     def __init__(self, min_interval: float = 1.0, max_interval: float = 0.1):
         self.min_interval = min_interval
         self.max_interval = max_interval
-        self.timeline = Timeline()
         self.last_request_time = {}
 
-    async def __call__(self, request: Request, call_next):
-        server_ulid = request.headers.get("Server-ULID")
-        if not server_ulid:
-            raise HTTPException(status_code=400, detail="Server Ulid is required")
-
+    def check_rate(self, server_ulid: str):        
         current_time = time.time()
 
         if server_ulid in self.last_request_time:
@@ -32,9 +27,3 @@ class FrequencyRateMiddleware:
                 )
 
         self.last_request_time[server_ulid] = current_time
-
-        self.timeline.add_event(server_ulid, current_time)
-
-        response = await call_next(request)
-
-        return response
