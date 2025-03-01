@@ -1,8 +1,7 @@
 services:
   dt-labs:
-    build: .
+    image: timescale/timescaledb-ha:pg15
     container_name: dt-labs
-    restart: always
     env_file:
       - .env
     environment:

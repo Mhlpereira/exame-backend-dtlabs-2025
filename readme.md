@@ -1,22 +1,19 @@
-### Comece por aqui
+# Comece por aqui
 
-**As variaveis de ambiente já estão adicionadas!!**
-```
+***As variaveis de ambiente já estão adicionadas!!***
 
-docker compose build 
-```
 
-## Utilize o docker compose up -d para subir o container sem travar o terminal.
+### Utilize o docker compose up -d para subir o container sem travar o terminal.
 ```
 docker compose up -d
 ```
 
-## Execute para alimentar o banco de dados
+### Execute para alimentar o banco de dados
 ```
 python -m app.script.seed
 ```
 
-## Utilize esse comando para iniciar o servidor 
+### Utilize esse comando para iniciar o servidor 
 ```
 uvicorn app.main:app
 ```

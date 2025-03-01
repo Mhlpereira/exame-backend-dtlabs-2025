@@ -14,6 +14,7 @@ async def auth_middleware(request: Request, call_next):
         {"path": "/auth/login", "methods": ["POST"]},
         {"path": "/auth/register", "methods": ["POST"]},
         {"path": "/data", "methods": ["POST"]}, 
+        {"path": "/test-redis", "methods": "GET"}
     ]
 
     for route in public_routes:

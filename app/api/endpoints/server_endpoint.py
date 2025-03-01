@@ -52,4 +52,4 @@ async def list_server() -> List[ListServerDTO]:
     
     servers_list = await ServerService.list_server()
     data = [ListServerDTO(name=server.server_name, server_ulid=server.server_ulid) for server in servers_list]
-    return JSONResponse(content=data, status_code=200)
+    return JSONResponse(content=data.dict(), status_code=200)
