@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.responses import JSONResponse
 
 from app.api.services.server_service import ServerService
@@ -48,8 +48,8 @@ async def create_server(body: CreateServerDTO, user_id: str = Depends(get_user_i
     return JSONResponse(content=output, status_code=201)
 
 @router.get("/list-servers")
-async def list_server() -> List[ListServerDTO]:
+async def list_server() -> Response:
     
     servers_list = await ServerService.list_server()
-    data = [ListServerDTO(name=server.server_name, server_ulid=server.server_ulid) for server in servers_list]
-    return JSONResponse(content=data.dict(), status_code=200)
+    data = [ListServerDTO(name=server.server_name, server_ulid=server.server_ulid).model_dump() for server in servers_list]
+    return JSONResponse(content=data, status_code=200)

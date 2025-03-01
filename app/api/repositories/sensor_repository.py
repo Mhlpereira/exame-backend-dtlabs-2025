@@ -2,7 +2,6 @@ import datetime
 import random
 from typing import Optional
 
-from app.api.models.sensor_model import SensorModel
 
 class SensorRepository:
     
@@ -13,8 +12,6 @@ class SensorRepository:
         
         temperature = round(random.uniform(20.0, 40.0),1)
         
-        await SensorModel.save(temperature)
-
         return temperature
     
     async def get_humidity() -> Optional[float]:

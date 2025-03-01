@@ -1,9 +1,9 @@
 from fastapi import HTTPException , Request
+from tortoise import Tortoise
 import ulid
 from datetime import datetime
 from typing import List
 from tortoise.exceptions import DoesNotExist
-from app.api.models.request_model import ServerTimeModel
 from app.api.models.server_model import ServerModel
 from app.api.models.user_model import UserModel
 
@@ -28,16 +28,19 @@ class ServerRepository:
             return server
         except Exception as e:
             raise HTTPException(status_code=500, detail="Error listing servers")   
-             
+        
     async def save_sensor_data(server_ulid: str, sensor_type: str, value:float, timestamp:datetime) -> None:
         try:
-            await ServerTimeModel.create(
-                server_ulid=server_ulid,
-                sensor_type=sensor_type,
-                value=value,
-                timestamp=timestamp,
-            )
+            print("antes da conexão")
+            connection = Tortoise.get_connection("default")
+            if not connection:
+                raise HTTPException(status_code=500, detail="Database connection not initialized")
+            print("depois da conexão")
+            print(server_ulid, sensor_type, value,timestamp)
 
+            await connection.execute_query_dict("INSERT INTO sensor_data (server_ulid, sensor_type, value,timestamp) VALUES ($1, $2, $3, $4)",[server_ulid, sensor_type, value,timestamp])
+            print(connection)
+            print("depois do save")
             redis = Request.app.state.redis
             await redis.rpush(
                 "sensor_data_querue",
