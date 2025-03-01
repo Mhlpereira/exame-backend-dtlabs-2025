@@ -18,6 +18,8 @@ class ServerService:
     async def register_data(id:str) -> OutputRegisterDataDTO:
         server_ulid = await ServerService.get_server_id(id)
         timestamp = await ServerRepository.get_server_timestamp()
+
+
         temperature = await SensorService.get_temperature()
         humidity = await SensorService.get_humidity()
         voltage = await SensorService.get_voltage()
@@ -27,6 +29,22 @@ class ServerService:
         
             raise ValueError("At least one sensor value must be provided")
         
+        sensors = [
+            ("temperature", temperature),
+            ("humidity", humidity),
+            ("voltage", voltage),
+            ("current", current)
+        ]
+
+        for sensor_type, value in sensors:
+            if value is not None:
+                await ServerRepository.save_sensor_data(
+                    server_ulid=server_ulid,
+                    sensor_type=sensor_type,
+                    value=value,
+                    timestamp=timestamp
+                )
+
         
         sensor_data = OutputRegisterDataDTO(
             server_ulid=server_ulid,
@@ -38,6 +56,10 @@ class ServerService:
         )
         
         return sensor_data
+
+    async def get_sensor_data():
+        data = await ServerRepository()
+        return data
 
     async def create_server(name:str, userId: str)-> ServerModel:
         user = await UserService.get_user_by_id(userId)

@@ -12,16 +12,15 @@ class UserRepository:
             return user
         except Exception as e:
             print(f"Error creating user: {e}")
-            raise HTTPException(status_code=500, detail="Error creating user")
+            raise HTTPException(status_code=400, detail="Error creating user")
     
     async def get_user_by_email(email: str) -> Optional[UserModel]:
         try:
             user = await UserModel.get_or_none(email=email)
             return user
         except Exception as e:
-            print(f"Error fetching user by email: {e}")
             raise HTTPException(
-                status_code=500,
+                status_code=404,
                 detail="An error occurred while fetching the user by email.",
             )
 

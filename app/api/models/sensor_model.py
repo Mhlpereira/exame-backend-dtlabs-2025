@@ -6,10 +6,8 @@ class SensorModel(Model):
     id = fields.CharField(max_length=36, pk = True, unique = True)
     server_ulid = fields.ForeignKeyField("models.ServerModel", related_name="sensor_data")
     timestamp = fields.DatetimeField()
-    temperature = fields.FloatField(null = True)
-    humidity = fields.FloatField(null = True)
-    voltage = fields.FloatField(null = True)
-    current = fields.FloatField(null = True)
+    sensor_type = fields.CharField(max_length=80)
+    value = fields.FloatField()
 
     class Meta:
         table = "sensor_data"
