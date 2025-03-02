@@ -13,12 +13,12 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 async def create_user(data: CreateUserDTO) -> OutputUserDTO:
     user = await UserService.create_user(data.email, data.password)
 
-    data = OutputUserDTO(email=user.email)
+    data = OutputUserDTO(email=user.email).model_dump()
     return JSONResponse(content=data, status_code=201)
 
 
 @router.post("/login")
 async def login(data: LoginDTO) -> TokenDTO:
-    token = await AuthService.authenticate(data.email, data.password)
-    data = TokenDTO(access_token=token, token_type="bearer")
+    token = await AuthService.login(data.email, data.password)
+    data = TokenDTO(access_token=token, token_type="bearer").model_dump()
     return JSONResponse(content=data, status_code=200)

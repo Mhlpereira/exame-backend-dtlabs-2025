@@ -16,3 +16,8 @@ class CreateUserDTO(BaseModel):
 
 class OutputUserDTO(BaseModel):
     email: str
+
+
+class UserPayloadDTO(BaseModel):
+    sub: str
+    email: str

@@ -1,18 +1,18 @@
 from fastapi import HTTPException
 from app.api.models.user_model import UserModel
 from typing import Optional
-from ulid import ULID
+import ulid
 
 
 class UserRepository:
 
     async def create_user(email: str, hash_password: str) -> UserModel:
-        id = str(ULID())
+        id = str(ulid.new())
         try:
-            user = await UserModel.create(id, email=email, password=hash_password)
+            user = await UserModel.create(id=id, email=email, password=hash_password)
             return user
         except Exception as e:
-            raise HTTPException(status_code=400, detail="Error creating user: {e}")
+            raise HTTPException(status_code=400, detail=f"Error creating user: {e}")
 
     async def get_user_by_email(email: str) -> Optional[UserModel]:
         try:

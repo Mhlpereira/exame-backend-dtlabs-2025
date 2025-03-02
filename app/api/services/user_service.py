@@ -16,7 +16,7 @@ class UserService:
     async def create_user(email: str, password: str) -> UserModel:
         hashed_password = UserService.hash_password(password)
         confirm = UserService.confirm_password(password, hashed_password)
-        if confirm == False:
+        if confirm:
             raise Exception("Error encrypting password")
         else:
             user = await UserRepository.create_user(email, hashed_password)
@@ -25,7 +25,7 @@ class UserService:
 
     async def verify_password(email: str, password: str) -> UserModel:
         user = await UserRepository.get_user_by_email(email)
-        confirm_password = await UserService.confirm_password(password, user.password)
+        confirm_password = UserService.confirm_password(password, user.password)
         if confirm_password == True:
             return user
         else:

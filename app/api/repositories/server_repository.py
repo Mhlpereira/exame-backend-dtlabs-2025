@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from tortoise import Tortoise
-from ulid import ULID
+import ulid
 from datetime import datetime
 from typing import List, Optional
 from app.api.models.server_model import ServerModel
@@ -50,8 +50,8 @@ class ServerRepository:
 
     async def create_server(name: str, user: UserModel) -> ServerModel:
         try:
-            id = str(ULID())
-            server = await ServerModel.create(id, name, user)
+            id = str(ulid.new())
+            server = await ServerModel.create(id=id, name=name, user=user)
             return server
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error creating server: {e}")
