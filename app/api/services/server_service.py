@@ -6,6 +6,8 @@ from app.api.services.sensor_service import SensorService
 from app.api.services.user_service import UserService
 from app.schemas.server_dto import OutputRegisterDataDTO
 from redis.asyncio import Redis
+from app.api.core.redis import start_process_task
+
 
 
 class ServerService:
@@ -36,7 +38,7 @@ class ServerService:
             ("voltage", voltage),
             ("current", current)
         ]
-
+        start_process_task(redis)
         for sensor_type, value in sensors:
             if value is not None:
                 await ServerRepository.save_sensor_data(
@@ -44,11 +46,12 @@ class ServerService:
                     sensor_type=sensor_type,
                     value=value,
                     server_time=server_time,
-                    redis=redis
                 )
-
-        last_request_time = datetime.datetime.now().isoformat()
-        await redis.set("last_request_time", last_request_time)
+            await redis.lpush(
+                "sensor_data_queue",
+                f"{server_ulid}:{sensor_type}:{value}:{server_time}"
+            )
+            
         
         sensor_data = OutputRegisterDataDTO(
             server_ulid=server_ulid,
@@ -81,3 +84,4 @@ class ServerService:
     async def get_server_id(id:str) -> str:
         server_id = await ServerRepository.get_server_id(id)
         return server_id
+    
