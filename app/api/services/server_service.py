@@ -7,82 +7,91 @@ from app.api.services.user_service import UserService
 from app.schemas.server_dto import OutputRegisterDataDTO
 from redis.asyncio import Redis
 from app.api.core.redis import start_process_task
-
+from datetime import datetime
 
 
 class ServerService:
 
-    async def valite_sensor(temperature: Optional[float], humidity: Optional[float], voltage: Optional[float], current: Optional[float]) -> bool:
+    async def valite_sensor(
+        temperature: Optional[float],
+        humidity: Optional[float],
+        voltage: Optional[float],
+        current: Optional[float],
+    ) -> bool:
         return any(
-            value is not None
-            for value in [temperature, humidity, voltage, current]
+            value is not None for value in [temperature, humidity, voltage, current]
         )
 
-    async def register_data(id:str, redis: Redis) -> OutputRegisterDataDTO:
+    async def register_data(id: str, redis: Redis) -> OutputRegisterDataDTO:
         server_ulid = await ServerService.get_server_id(id)
         server_time = await ServerRepository.get_server_timestamp()
-
 
         temperature = await SensorService.get_temperature()
         humidity = await SensorService.get_humidity()
         voltage = await SensorService.get_voltage()
         current = await SensorService.get_current()
-        
-        if not await ServerService.valite_sensor(temperature, humidity, voltage, current):
-        
+
+        if not await ServerService.valite_sensor(
+            temperature, humidity, voltage, current
+        ):
+
             raise ValueError("At least one sensor value must be provided")
-        
+
         sensors = [
             ("temperature", temperature),
             ("humidity", humidity),
             ("voltage", voltage),
-            ("current", current)
+            ("current", current),
         ]
         start_process_task(redis)
         for sensor_type, value in sensors:
             if value is not None:
                 await redis.lpush(
-                "sensor_data_queue",
-                f"{server_ulid}:{sensor_type}:{value}:{server_time}"
+                    "sensor_data_queue",
+                    f"{server_ulid}:{sensor_type}:{value}:{server_time}",
                 )
-                # await ServerRepository.save_sensor_data(
-                #     server_ulid=server_ulid,
-                #     sensor_type=sensor_type,
-                #     value=value,
-                #     server_time=server_time,
-                # )
-            
-            
-        
+
         sensor_data = OutputRegisterDataDTO(
             server_ulid=server_ulid,
             timestamp=server_time,
             temperature=temperature,
             humidity=humidity,
             voltage=voltage,
-            current=current
+            current=current,
         )
-        
+
         return sensor_data
 
-    async def get_sensor_data():
-        data = await ServerRepository()
+    async def get_sensor_data(
+        server_ulid: Optional[str],
+        start_time: Optional[datetime],
+        end_time: Optional[datetime],
+        sensor_type: Optional[str],
+        aggregation: Optional[str],
+    ):
+
+        data = await ServerRepository(
+            server_ulid=server_ulid,
+            start_time=start_time,
+            end_time=end_time,
+            sensor_type=sensor_type,
+            aggregation=aggregation,
+        )
         return data
 
-    async def create_server(name:str, userId: str)-> ServerModel:
+    async def create_server(name: str, userId: str) -> ServerModel:
         user = await UserService.get_user_by_id(userId)
         server = await ServerRepository.create_server(name, user)
         return server
-    
-    async def server_time()-> datetime:
+
+    async def server_time() -> datetime:
         timestamp = await ServerRepository.server_time()
         return timestamp
-    
-    async def list_server()-> List[ServerModel]:
+
+    async def list_server() -> List[ServerModel]:
         server = await ServerRepository.list_server()
         return server
-    
-    async def get_server_id(id:str) -> str:
+
+    async def get_server_id(id: str) -> str:
         server_id = await ServerRepository.get_server_id(id)
         return server_id
-    

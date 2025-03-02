@@ -5,6 +5,7 @@ import os
 
 ALGORITHM = "HS256"
 
+
 async def auth_middleware(request: Request, call_next):
     public_routes = [
         {"path": "/"},
@@ -13,8 +14,8 @@ async def auth_middleware(request: Request, call_next):
         {"path": "/openapi.json", "methods": ["GET"]},
         {"path": "/auth/login", "methods": ["POST"]},
         {"path": "/auth/register", "methods": ["POST"]},
-        {"path": "/data", "methods": ["POST"]}, 
-        {"path": "/test-redis", "methods": "GET"}
+        {"path": "/data", "methods": ["POST"]},
+        {"path": "/test-redis", "methods": "GET"},
     ]
 
     for route in public_routes:
@@ -28,12 +29,12 @@ async def auth_middleware(request: Request, call_next):
     token = auth_header.split(" ")[1]
 
     try:
-        payload = jwt.decode(token, os.getenv('MY_SECRET'), algorithms=[ALGORITHM])
-        request.state.user = payload 
+        payload = jwt.decode(token, os.getenv("MY_SECRET"), algorithms=[ALGORITHM])
+        request.state.user = payload
     except ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token has expired")
+        raise HTTPException(status_code=498, detail="Token has expired")
     except InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=498, detail="Invalid token")
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error processing token: {str(e)}")
 

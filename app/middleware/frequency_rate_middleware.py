@@ -13,8 +13,7 @@ class FrequencyRateMiddleware:
         self.queue_key = queue_key
         self.frequency = 0
         self.last_request_time = None
-
-    
+   
     async def check_frequency(self):
         current_time = datetime.datetime.now().isoformat()
 
