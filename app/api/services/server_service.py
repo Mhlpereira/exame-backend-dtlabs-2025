@@ -5,6 +5,7 @@ from app.api.repositories.server_repository import ServerRepository
 from app.api.services.sensor_service import SensorService
 from app.api.services.user_service import UserService
 from app.schemas.server_dto import OutputRegisterDataDTO
+from redis.asyncio import Redis
 
 
 class ServerService:
@@ -15,9 +16,9 @@ class ServerService:
             for value in [temperature, humidity, voltage, current]
         )
 
-    async def register_data(id:str) -> OutputRegisterDataDTO:
+    async def register_data(id:str, redis: Redis) -> OutputRegisterDataDTO:
         server_ulid = await ServerService.get_server_id(id)
-        timestamp = await ServerRepository.get_server_timestamp()
+        server_time = await ServerRepository.get_server_timestamp()
 
 
         temperature = await SensorService.get_temperature()
@@ -42,13 +43,16 @@ class ServerService:
                     server_ulid=server_ulid,
                     sensor_type=sensor_type,
                     value=value,
-                    timestamp=timestamp
+                    server_time=server_time,
+                    redis=redis
                 )
 
+        last_request_time = datetime.datetime.now().isoformat()
+        await redis.set("last_request_time", last_request_time)
         
         sensor_data = OutputRegisterDataDTO(
             server_ulid=server_ulid,
-            timestamp=timestamp,
+            timestamp=server_time,
             temperature=temperature,
             humidity=humidity,
             voltage=voltage,

@@ -5,7 +5,7 @@ CREATE TABLE sensor_data (
     server_ulid TEXT NOT NULL,
     sensor_type TEXT NOT NULL,
     value FLOAT NOT NULL,
-    timestamp TIMESTAMPTZ NOT NULL
+    server_time TIMESTAMPTZ NOT NULL
 );
 
-SELECT create_hypertable('sensor_data', 'timestamp', partitioning_column => 'server_ulid', number_partitions => 1000);
+SELECT create_hypertable('sensor_data', 'server_time', partitioning_column => 'server_ulid', number_partitions => 1000);

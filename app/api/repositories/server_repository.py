@@ -1,12 +1,13 @@
+import asyncio
 from fastapi import HTTPException , Request
 from tortoise import Tortoise
 import ulid
 from datetime import datetime
 from typing import List
-from tortoise.exceptions import DoesNotExist
 from app.api.models.server_model import ServerModel
 from app.api.models.user_model import UserModel
-
+from redis.asyncio import Redis
+from app.api.core.redis import start_process_task
 
 class ServerRepository:
     
@@ -14,8 +15,8 @@ class ServerRepository:
         try:
             server = await ServerModel.get(server_ulid=id)
             return server.server_ulid
-        except DoesNotExist:
-            raise DoesNotExist(status_code=404, detail="User not found")
+        except Exception as e:
+            raise HTTPException(status_code=404, detail=f"User not found{e}")
         
     async def get_server_timestamp() -> datetime:
         timestamp = datetime.now().isoformat()
@@ -27,27 +28,32 @@ class ServerRepository:
             server = await ServerModel.all()
             return server
         except Exception as e:
-            raise HTTPException(status_code=500, detail="Error listing servers")   
+            raise HTTPException(status_code=500, detail=f"Error listing servers{e}")   
         
-    async def save_sensor_data(server_ulid: str, sensor_type: str, value:float, timestamp:datetime) -> None:
+    async def save_sensor_data(server_ulid: str, sensor_type: str, value:float, server_time:datetime, redis: Redis) -> None:
+        global process_task, process_event
         try:
             print("antes da conexão")
             connection = Tortoise.get_connection("default")
             if not connection:
                 raise HTTPException(status_code=500, detail="Database connection not initialized")
             print("depois da conexão")
-            print(server_ulid, sensor_type, value,timestamp)
-
-            await connection.execute_query_dict("INSERT INTO sensor_data (server_ulid, sensor_type, value,timestamp) VALUES ($1, $2, $3, $4)",[server_ulid, sensor_type, value,timestamp])
+            print(server_ulid, sensor_type, value,server_time)
+            server_time_dt = datetime.fromisoformat(server_time)
+            await connection.execute_query('INSERT INTO sensor_data (server_ulid, sensor_type, value,server_time) VALUES ($1, $2, $3, $4)',[server_ulid, sensor_type, value, server_time_dt])
             print(connection)
             print("depois do save")
-            redis = Request.app.state.redis
-            await redis.rpush(
-                "sensor_data_querue",
-                f"{server_ulid}:{sensor_type}:{value}:{timestamp.isoformat()}"
+
+            
+            await redis.lpush(
+                "sensor_data_queue",
+                f"{server_ulid}:{sensor_type}:{value}:{server_time_dt}"
             )
-        except Exception:
-            raise HTTPException(status_code=400, detail="Error saving data")
+            start_process_task(redis)
+            
+
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Error saving data: {e}")
         
 
     

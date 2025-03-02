@@ -1,9 +1,10 @@
+import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from starlette.middleware.base  import BaseHTTPMiddleware
 from tortoise.contrib.fastapi import register_tortoise
 from dotenv import load_dotenv
-from app.api.core.redis import connect_redis, disconnect_redis
+from app.api.core.redis import connect_redis, disconnect_redis, process_queue
 from app.middleware.auth_middleware import auth_middleware
 from app.api.endpoints import auth_router , server_router
 import os

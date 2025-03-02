@@ -1,7 +1,7 @@
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 
+from app.api.core.redis import get_redis_client
 from app.api.services.server_service import ServerService
 from app.middleware.frequency_rate_middleware import FrequencyRateMiddleware
 from app.middleware.get_id import get_user_id
@@ -10,12 +10,12 @@ from app.schemas.server_dto import CreateServerDTO, ListServerDTO, OutputCreateS
 
 router = APIRouter(tags=["server"])
 
-frequency_limiter = FrequencyRateMiddleware()
 
 @router.post("/data")
-async def register_data(server_ulid: str) -> OutputRegisterDataDTO:
+async def register_data(server_ulid: str,redis=Depends(get_redis_client)) -> OutputRegisterDataDTO:
     try:
-        frequency_limiter.check_rate(server_ulid)
+        
+        frequency_limiter = FrequencyRateMiddleware(redis,"sensor_data_queue")
 
 
         confirmed_id = await ServerService.get_server_id(server_ulid)
@@ -25,9 +25,9 @@ async def register_data(server_ulid: str) -> OutputRegisterDataDTO:
                 status_code=404,
                 detail="Server not found!") 
         
-        data = await ServerService.register_data(confirmed_id)
-        
-        return JSONResponse(content=data, status_code=201)
+        data = await ServerService.register_data(confirmed_id, redis)
+        await frequency_limiter.check_frequency()
+        return JSONResponse(content=data.model_dump(), status_code=201)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
