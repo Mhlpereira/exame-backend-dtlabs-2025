@@ -3,6 +3,8 @@ from fastapi import FastAPI, Request
 import asyncio
 import logging
 
+from app.api.repositories.server_repository import ServerRepository
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -27,7 +29,7 @@ async def process_queue(redis: Redis):
 
 
     while not process_event.is_set():
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.1)
 
         requests = await redis.lrange(queue_key, 0, -1)
         if requests:
@@ -35,6 +37,15 @@ async def process_queue(redis: Redis):
             for request in requests:
                 if isinstance(request, bytes):
                     request = request.decode("utf-8")  
+                    try:
+                        server_ulid, sensor_type, value, server_time = request.split(":")
+                        await ServerRepository.save_sensor_data(
+                                server_ulid=server_ulid,
+                                sensor_type=sensor_type,
+                                value=value,
+                                server_time=server_time)
+                    except Exception as e:
+                        logger.error(f"Error prossenig data in stream {request}: {e}")
                 batch.append(request)
             await redis.delete(queue_key)
             logger.info("Queue cleared after processing.")

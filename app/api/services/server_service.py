@@ -41,16 +41,17 @@ class ServerService:
         start_process_task(redis)
         for sensor_type, value in sensors:
             if value is not None:
-                await ServerRepository.save_sensor_data(
-                    server_ulid=server_ulid,
-                    sensor_type=sensor_type,
-                    value=value,
-                    server_time=server_time,
-                )
-            await redis.lpush(
+                await redis.lpush(
                 "sensor_data_queue",
                 f"{server_ulid}:{sensor_type}:{value}:{server_time}"
-            )
+                )
+                # await ServerRepository.save_sensor_data(
+                #     server_ulid=server_ulid,
+                #     sensor_type=sensor_type,
+                #     value=value,
+                #     server_time=server_time,
+                # )
+            
             
         
         sensor_data = OutputRegisterDataDTO(
