@@ -1,4 +1,5 @@
 import datetime
+from app.api.core.dependency import oauth2_scheme
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.responses import JSONResponse
@@ -12,6 +13,7 @@ from app.schemas.server_dto import (
     ListServerDTO,
     OutputCreateServerDTO,
     OutputRegisterDataDTO,
+    OutputServerHealthDTO,
 )
 
 
@@ -45,8 +47,8 @@ async def get_sensor_data(
     end_time: Optional[datetime] = Query(None),
     sensor_type: Optional[str] = Query(None),
     aggregation: Optional[str] = Query(None),
+    token: str = Depends(oauth2_scheme),
 ):
-    ### need authentication
 
     data = await ServerService(
         server_ulid=server_ulid,
@@ -60,7 +62,9 @@ async def get_sensor_data(
 
 @router.post("/create-server")
 async def create_server(
-    body: CreateServerDTO, user_id: str = Depends(get_user_id)
+    body: CreateServerDTO,
+    user_id: str = Depends(get_user_id),
+    token: str = Depends(oauth2_scheme),
 ) -> OutputCreateServerDTO:
 
     server = await ServerService.create_server(body.name, user_id)
@@ -73,11 +77,21 @@ async def create_server(
 @router.get("/list-servers")
 async def list_server() -> Response:
 
-    servers_list = await ServerService.list_server()
-    data = [
-        ListServerDTO(
-            name=server.server_name, server_ulid=server.server_ulid
-        ).model_dump()
-        for server in servers_list
-    ]
-    return JSONResponse(content=data, status_code=200)
+    servers = await ServerService.list_server()
+
+    return JSONResponse(content=servers, status_code=200)
+
+
+@router.get("/health/:server_id")
+async def get_server_healt_by_id(
+    server_id, token: str = Depends(oauth2_scheme)
+) -> OutputServerHealthDTO:
+    server_health = await ServerService.get_server_health_by_id(server_id)
+
+    return JSONResponse(content=server_health, status_code=200)
+
+
+@router.get("/health/all")
+async def get_all_server_health(token: str = Depends(oauth2_scheme)):
+    servers_health = await ServerService.get_all_server_health()
+    return JSONResponse(content=servers_health, status_code=200)

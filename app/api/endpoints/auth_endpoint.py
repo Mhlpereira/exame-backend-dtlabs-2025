@@ -20,5 +20,4 @@ async def create_user(data: CreateUserDTO) -> OutputUserDTO:
 @router.post("/login")
 async def login(data: LoginDTO) -> TokenDTO:
     token = await AuthService.login(data.email, data.password)
-    data = TokenDTO(access_token=token, token_type="bearer").model_dump()
-    return JSONResponse(content=data, status_code=200)
+    return TokenDTO(access_token=token, token_type="bearer")

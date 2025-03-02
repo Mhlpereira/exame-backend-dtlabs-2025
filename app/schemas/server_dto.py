@@ -13,19 +13,25 @@ class OutputRegisterDataDTO(BaseModel):
     voltage: Optional[float] = None
     current: Optional[float] = None
 
+
 class PayloadDTO(BaseModel):
     server_ulid: str
-    
-    
+
+
 class OutputCreateServerDTO(BaseModel):
     server_name: str
-    
+
 
 class CreateServerDTO(BaseModel):
     name: str
+
 
 class ListServerDTO(BaseModel):
     name: str
     server_ulid: str
 
 
+class OutputServerHealthDTO(BaseModel):
+    server_ulid: str
+    status: str
+    server_name: str

@@ -1,3 +1,4 @@
+from asyncio import Server
 from fastapi import HTTPException
 from tortoise import Tortoise
 import ulid
@@ -9,17 +10,29 @@ from app.api.models.user_model import UserModel
 
 class ServerRepository:
 
-    async def get_server_id(id: str) -> str:
+    async def get_server_by_id(id: str) -> ServerModel:
         try:
             server = await ServerModel.get(server_ulid=id)
-            return server.server_ulid
+            return server
         except Exception as e:
             raise HTTPException(status_code=404, detail=f"User not found{e}")
 
-    async def get_server_timestamp() -> datetime:
-        timestamp = datetime.now().isoformat()
-
-        return timestamp
+    async def get_server_timestamp(server_id) -> datetime:
+        try:
+            connection = Tortoise.get_connection("default")
+            if not connection:
+                raise HTTPException(
+                    status_code=500, detail="Database connection not initialized"
+                )
+            result = await connection.execute_query(
+                "SELECT server_time FROM sensor_data WHERE  server_ulid = $1 ORDER BY server_time DESC LIMIT 1"
+            )
+            print(f"result no get_server_time{result}")
+            return result[0]
+        except Exception as e:
+            raise HTTPException(
+                status_code=400, detail=f"Error fetching from timestamp: {e}"
+            )
 
     async def list_server() -> List[ServerModel]:
         try:
@@ -38,11 +51,11 @@ class ServerRepository:
                 raise HTTPException(
                     status_code=500, detail="Database connection not initialized"
                 )
-            timestamp = datetime.fromisoformat(server_time)
-            print(server_ulid, sensor_type, value, timestamp)
+            server_time_fmt = datetime.fromisoformat(server_time)
+            print(server_ulid, sensor_type, value, server_time_fmt)
             await connection.execute_query(
-                "INSERT INTO sensor_data (server_ulid, sensor_type, value,timestamp) VALUES ($1, $2, $3, $4)",
-                [server_ulid, sensor_type, value, timestamp],
+                "INSERT INTO sensor_data (server_ulid, sensor_type, value,server_time) VALUES ($1, $2, $3, $4)",
+                [server_ulid, sensor_type, value, server_time_fmt],
             )
 
         except Exception as e:
