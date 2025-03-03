@@ -3,18 +3,17 @@ from datetime import datetime
 from unittest.mock import patch, MagicMock
 from fastapi import HTTPException
 from tortoise import Tortoise
-import os
 
-from app.api.repositories.sensor_repository import save_sensor_data
+from app.api.repositories.server_repository import ServerRepository
 
 
 @pytest.fixture
 async def setup_database():
     await Tortoise.init(
-        db_url=f"postgres://{os.getenv('PG_USER')}:{os.getenv('PG_PASSWORD')}@localhost:54323/{os.getenv('PG_DB')}",
+        db_url="postgres://test:test@172.19.0.4:54323/test",
         modules={"models": ["app.api.models"]},
     )
-
+    await Tortoise.generate_schemas()
     conn = Tortoise.get_connection("default")
     await conn.execute_query("TRUNCATE TABLE sensor_data CASCADE")
 
@@ -35,7 +34,9 @@ async def test_save_sensor_data_successful(setup_database):
         Tortoise.get_connection("default"), "execute_query"
     ) as mock_execute:
         mock_execute.return_value = ([], 1)
-        await save_sensor_data(server_ulid, sensor_type, value, server_time)
+        await ServerRepository.save_sensor_data(
+            server_ulid, sensor_type, value, server_time
+        )
 
         mock_execute.assert_called_once()
         args = mock_execute.call_args[0]
@@ -55,7 +56,9 @@ async def test_save_sensor_data_no_connection():
 
     with patch.object(Tortoise, "get_connection", return_value=None):
         with pytest.raises(HTTPException) as exc_info:
-            await save_sensor_data(server_ulid, sensor_type, value, server_time)
+            await ServerRepository.save_sensor_data(
+                server_ulid, sensor_type, value, server_time
+            )
 
         assert exc_info.value.status_code == 500
         assert "Database connection not initialized" in exc_info.value.detail
@@ -71,7 +74,9 @@ async def test_save_sensor_data_invalid_datetime():
     mock_connection = MagicMock()
     with patch.object(Tortoise, "get_connection", return_value=mock_connection):
         with pytest.raises(HTTPException) as exc_info:
-            await save_sensor_data(server_ulid, sensor_type, value, server_time)
+            await ServerRepository.save_sensor_data(
+                server_ulid, sensor_type, value, server_time
+            )
 
         assert exc_info.value.status_code == 400
         assert "Error saving data" in exc_info.value.detail
@@ -90,7 +95,9 @@ async def test_save_sensor_data_database_error(setup_database):
         mock_execute.side_effect = Exception("Database error")
 
         with pytest.raises(HTTPException) as exc_info:
-            await save_sensor_data(server_ulid, sensor_type, value, server_time)
+            await ServerRepository.save_sensor_data(
+                server_ulid, sensor_type, value, server_time
+            )
 
         assert exc_info.value.status_code == 400
         assert "Error saving data: Database error" in exc_info.value.detail
@@ -123,7 +130,7 @@ async def test_save_sensor_data_parameter_validation():
     with patch.object(Tortoise, "get_connection", return_value=mock_connection):
         for case in invalid_cases:
             with pytest.raises(HTTPException) as exc_info:
-                await save_sensor_data(**case)
+                await ServerRepository.save_sensor_data(**case)
             assert exc_info.value.status_code in [
                 400,
                 422,
@@ -141,7 +148,6 @@ async def test_save_sensor_data_parameter_validation():
 )
 @pytest.mark.asyncio
 async def test_save_sensor_data_different_types(setup_database, sensor_type, value):
-    """Teste para verificar diferentes tipos de sensores e valores"""
     server_ulid = "01FGZW7TRAEY9BSJKN5FQXJS7B"
     server_time = "2023-01-01T12:00:00"
 
@@ -150,7 +156,9 @@ async def test_save_sensor_data_different_types(setup_database, sensor_type, val
     ) as mock_execute:
         mock_execute.return_value = ([], 1)
 
-        await save_sensor_data(server_ulid, sensor_type, value, server_time)
+        await ServerRepository.save_sensor_data(
+            server_ulid, sensor_type, value, server_time
+        )
 
         mock_execute.assert_called_once()
         args = mock_execute.call_args[0]

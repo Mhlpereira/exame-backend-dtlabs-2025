@@ -29,13 +29,12 @@ services:
     env_file:
       - .env
     environment:
-      POSTGRES_PASSWORD: ${PG_PASSWORD} 
-      POSTGRES_USER: ${PG_USER}
-      POSTGRES_DB: ${PG_DB}
+      POSTGRES_PASSWORD: test
+      POSTGRES_USER: test
+      POSTGRES_DB: test
     ports:
       - 54323:54323
     volumes:
-      - timescale_data:/var/lib/postgresql/data
       - ./init-timescale.sql:/docker-entrypoint-initdb.d/init-timescale.sql
 
 volumes:

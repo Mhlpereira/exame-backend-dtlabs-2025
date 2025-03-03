@@ -1,14 +1,11 @@
-adicionar monitoramento de saúde
-rever os requisitos
-começar os teste
+Adicionar os cache (comecei a fazer pelo service de buscar o id do servidor)
 
-
-Lógica do middleware, pausa para descanso!
+Criar outra classe ou worker para ficar executando as requisições para o servidor, mudar o tratamento ao invez de colocar um pacote de 10 na fila e enviar tudo de uma vez, ir disparando no máximo 10 por segundo e parar no valor
 
 utilizar a lógica de verificar ao menos um valor para para o zervidor
 
 
-Prioridades para testes (do mais importante ao menos importante):
+Prioridades para testes (do mais importante ao menos importante): *** verificar conexão com banco de dados git a
 
 Repository (Alta Prioridade)
 
