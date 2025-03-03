@@ -18,6 +18,7 @@ async def auth_middleware(request: Request, call_next):
         {"path": "/auth/login", "methods": ["POST"]},
         {"path": "/auth/register", "methods": ["POST"]},
         {"path": "/data", "methods": ["POST"]},
+        {"path": "/data/stop", "methods": ["POST"]},
         {"path": "/test-redis", "methods": "GET"},
     ]
 
@@ -38,8 +39,6 @@ async def auth_middleware(request: Request, call_next):
             os.getenv("DT_SECRET"),
             algorithms="HS256",
         )
-        logger.error(payload)
-        logger.error(os.getenv("DT_SECRET"))
         request.state.user = payload
     except ExpiredSignatureError:
         raise HTTPException(status_code=498, detail="Token has expired")

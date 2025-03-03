@@ -25,10 +25,12 @@ class ServerRepository:
                     status_code=500, detail="Database connection not initialized"
                 )
             result = await connection.execute_query(
-                "SELECT server_time FROM sensor_data WHERE  server_ulid = $1 ORDER BY server_time DESC LIMIT 1"
+                "SELECT server_time FROM sensor_data WHERE server_ulid = $1 ORDER BY server_time DESC LIMIT 1",
+                [server_id],
             )
-            print(f"result no get_server_time{result}")
-            return result[0]
+            if not result or not result[0]:
+                raise HTTPException(status_code=404, detail=f"Server without timestamp")
+            return result[0][0]
         except Exception as e:
             raise HTTPException(
                 status_code=400, detail=f"Error fetching from timestamp: {e}"
@@ -44,7 +46,6 @@ class ServerRepository:
     async def save_sensor_data(
         server_ulid: str, sensor_type: str, value: float, server_time: datetime
     ) -> None:
-        global process_task, process_event
         try:
             connection = Tortoise.get_connection("default")
             if not connection:
@@ -53,10 +54,11 @@ class ServerRepository:
                 )
             server_time_fmt = datetime.fromisoformat(server_time)
             print(server_ulid, sensor_type, value, server_time_fmt)
-            await connection.execute_query(
-                "INSERT INTO sensor_data (server_ulid, sensor_type, value,server_time) VALUES ($1, $2, $3, $4)",
-                [server_ulid, sensor_type, value, server_time_fmt],
-            )
+            async with connection.transction():
+                await connection.execute_query(
+                    "INSERT INTO sensor_data (server_ulid, sensor_type, value, server_time) VALUES ($1, $2, $3, $4)",
+                    [server_ulid, sensor_type, value, server_time_fmt],
+                )
 
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Error saving data: {e}")
@@ -64,7 +66,9 @@ class ServerRepository:
     async def create_server(name: str, user: UserModel) -> ServerModel:
         try:
             id = str(ulid.new())
-            server = await ServerModel.create(id=id, name=name, user=user)
+            server = await ServerModel.create(
+                server_ulid=id, server_name=name, user=user
+            )
             return server
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error creating server: {e}")
