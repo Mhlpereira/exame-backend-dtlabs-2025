@@ -17,11 +17,11 @@ class UserService:
         hashed_password = UserService.hash_password(password)
         confirm = UserService.confirm_password(password, hashed_password)
         if confirm:
-            raise Exception("Error encrypting password")
-        else:
             user = await UserRepository.create_user(email, hashed_password)
             print(user)
-        return user
+            return user
+        else:
+            raise Exception("Error encrypting password")
 
     async def verify_password(email: str, password: str) -> UserModel:
         user = await UserRepository.get_user_by_email(email)

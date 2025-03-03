@@ -2,7 +2,6 @@ import datetime
 import json
 from typing import List, Optional
 
-from app.api.endpoints.server_endpoint import list_server
 from app.api.models.server_model import ServerModel
 from app.api.repositories.server_repository import ServerRepository
 from app.api.services.sensor_service import SensorService

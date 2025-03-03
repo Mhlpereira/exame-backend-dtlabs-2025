@@ -1,5 +1,6 @@
 import datetime
-from app.api.core.dependency import oauth2_scheme
+
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.responses import JSONResponse
@@ -10,7 +11,6 @@ from app.middleware.frequency_rate_middleware import FrequencyRateMiddleware
 from app.middleware.get_id import get_user_id
 from app.schemas.server_dto import (
     CreateServerDTO,
-    ListServerDTO,
     OutputCreateServerDTO,
     OutputRegisterDataDTO,
     OutputServerHealthDTO,
@@ -47,7 +47,7 @@ async def get_sensor_data(
     end_time: Optional[datetime] = Query(None),
     sensor_type: Optional[str] = Query(None),
     aggregation: Optional[str] = Query(None),
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
 ):
 
     data = await ServerService(
@@ -64,7 +64,7 @@ async def get_sensor_data(
 async def create_server(
     body: CreateServerDTO,
     user_id: str = Depends(get_user_id),
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
 ) -> OutputCreateServerDTO:
 
     server = await ServerService.create_server(body.name, user_id)
@@ -84,7 +84,8 @@ async def list_server() -> Response:
 
 @router.get("/health/:server_id")
 async def get_server_healt_by_id(
-    server_id, token: str = Depends(oauth2_scheme)
+    server_id: str,
+    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
 ) -> OutputServerHealthDTO:
     server_health = await ServerService.get_server_health_by_id(server_id)
 
@@ -92,6 +93,8 @@ async def get_server_healt_by_id(
 
 
 @router.get("/health/all")
-async def get_all_server_health(token: str = Depends(oauth2_scheme)):
+async def get_all_server_health(
+    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
+):
     servers_health = await ServerService.get_all_server_health()
     return JSONResponse(content=servers_health, status_code=200)

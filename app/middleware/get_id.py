@@ -1,6 +1,10 @@
+from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, Request
 import jwt
 import os
+
+load_dotenv()
+
 
 async def get_user_id(request: Request):
     auth_header = request.headers.get("Authorization")
@@ -11,11 +15,13 @@ async def get_user_id(request: Request):
     token = auth_header.split(" ")[1]
 
     try:
-        payload = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=[os.getenv("ALGORITHM")])
+        payload = jwt.decode(token, os.getenv("DT_SECRET"), algorithms="HS256")
         user_id = payload.get("sub")
 
         if not user_id:
-            raise HTTPException(status_code=401, detail="Invalid token: subject not found!")
+            raise HTTPException(
+                status_code=401, detail="Invalid token: subject not found!"
+            )
 
         return user_id
 

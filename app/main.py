@@ -1,11 +1,11 @@
 from contextlib import asynccontextmanager
 from typing import Annotated
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, security
 from starlette.middleware.base import BaseHTTPMiddleware
 from tortoise.contrib.fastapi import register_tortoise
 from dotenv import load_dotenv
 from app.api.core.redis import connect_redis, disconnect_redis
-from app.api.core.dependency import oauth2_scheme
+from app.api.core.dependency import HTTPBearer
 from app.middleware.auth_middleware import auth_middleware
 from app.api.endpoints import auth_router, server_router
 import os
@@ -21,7 +21,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 load_dotenv("../.env")
 app.add_middleware(BaseHTTPMiddleware, dispatch=auth_middleware)
-
+app.security = [security]
 
 register_tortoise(
     app,
@@ -41,7 +41,7 @@ async def hellow():
 
 
 @app.get("/test-redis")
-async def test_redis(token: Annotated[str, Depends(oauth2_scheme)]):
+async def test_redis():
     redis = app.state.redis
     await redis.set("test_key", "test_value")
     value = await redis.get("test_key")

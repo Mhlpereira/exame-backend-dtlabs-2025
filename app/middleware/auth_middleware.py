@@ -1,9 +1,12 @@
+import logging
+from dotenv import load_dotenv
 from fastapi import Request, HTTPException
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 import jwt
 import os
 
-ALGORITHM = "HS256"
+logger = logging.getLogger(__name__)
+load_dotenv()
 
 
 async def auth_middleware(request: Request, call_next):
@@ -24,18 +27,27 @@ async def auth_middleware(request: Request, call_next):
 
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
+        logger.error("Authorization header missing or invalid")
         raise HTTPException(status_code=401, detail="Invalid token")
 
     token = auth_header.split(" ")[1]
 
     try:
-        payload = jwt.decode(token, os.getenv("MY_SECRET"), algorithms=[ALGORITHM])
+        payload = jwt.decode(
+            token,
+            os.getenv("DT_SECRET"),
+            algorithms="HS256",
+        )
+        logger.error(payload)
+        logger.error(os.getenv("DT_SECRET"))
         request.state.user = payload
     except ExpiredSignatureError:
         raise HTTPException(status_code=498, detail="Token has expired")
     except InvalidTokenError:
+        logger.error("Invalid token")
         raise HTTPException(status_code=498, detail="Invalid token")
     except Exception as e:
+        logger.error(f"Error processing token: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Error processing token: {str(e)}")
 
     return await call_next(request)
