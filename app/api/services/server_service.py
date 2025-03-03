@@ -1,7 +1,7 @@
 import datetime
+import json
 from typing import List, Optional
 
-from fastapi import HTTPException
 from app.api.endpoints.server_endpoint import list_server
 from app.api.models.server_model import ServerModel
 from app.api.repositories.server_repository import ServerRepository
@@ -13,7 +13,7 @@ from app.schemas.server_dto import (
     OutputServerHealthDTO,
 )
 from redis.asyncio import Redis
-from app.api.core.redis import start_process_task
+from app.api.core.redis import start_process_task, stop_process_task
 from datetime import datetime
 
 
@@ -41,7 +41,7 @@ class ServerService:
         if not await ServerService.valite_sensor(
             temperature, humidity, voltage, current
         ):
-
+            stop_process_task()
             raise ValueError("At least one sensor value must be provided")
 
         sensors = [
@@ -106,6 +106,12 @@ class ServerService:
         return data
 
     async def get_server_by_id(id: str) -> ServerModel:
+        cache_get_server_by_id = f"server:{id}"
+
+        cached_data = await redis.get(cache_get_server_by_id)
+        if cached_data:
+            return json.loads(cached_data)
+
         server = await ServerRepository.get_server_by_id(id)
         return server
 
