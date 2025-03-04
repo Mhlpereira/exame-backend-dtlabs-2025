@@ -1,8 +1,10 @@
+import asyncio
 import datetime
 from typing import List, Optional
 
 from fastapi import HTTPException
 
+from app.api.core.redis import process_sensor_data
 from app.api.models.server_model import ServerModel
 from app.api.repositories.server_repository import ServerRepository
 from app.api.services.sensor_service import SensorService
@@ -11,20 +13,23 @@ from app.schemas.server_dto import (
     ListServerDTO,
     OutputRegisterDataDTO,
     OutputServerHealthDTO,
+    SensorDataDTO,
 )
 from redis.asyncio import Redis
-from app.api.core.redis import start_process_task, stop_process_task
 from datetime import datetime
 
 
 class ServerService:
 
-    async def save_register_data(server_ulid, sensor_type, value, server_time):
+    process_task: Optional[asyncio.Task] = None
+    stop_event: asyncio.Event = asyncio.Event()
 
+    async def save_register_data(server_ulid, sensor_type, value, server_time):
+        value_fmt = float(value)
         await ServerRepository.save_sensor_data(
             server_ulid=server_ulid,
             sensor_type=sensor_type,
-            value=value,
+            value=value_fmt,
             server_time=server_time,
         )
 
@@ -38,20 +43,17 @@ class ServerService:
             value is not None for value in [temperature, humidity, voltage, current]
         )
 
-    async def register_sensor_data(id: str, redis: Redis) -> OutputRegisterDataDTO:
+    async def register_sensor_data(
+        id: str, stream_key: str, redis: Redis
+    ) -> OutputRegisterDataDTO:
         server = await ServerService.get_server_by_id(id)
-        stream_key = f"sensor_data_stream_{server.server_ulid}"
-        try:
-            await redis.xgroup_create(
-                stream_key,
-                "sensor_workers",
-                id="0",
-                mkstream=True,
-            )
-        except Exception as e:
-            print(f"Redis stream group already exist: {e}")
 
-        data = await ServerService.get_sensor_data(id)
+        data = await ServerService.generate_sensor_data(id)
+
+        if not await ServerService.valite_sensor(
+            data.temperature, data.humidity, data.voltage, data.current
+        ):
+            raise ValueError("At least one sensor value must be provided")
 
         sensors = [
             ("temperature", data.temperature),
@@ -62,9 +64,11 @@ class ServerService:
         for sensor_type, value in sensors:
             if value is not None:
                 message = {
-                    f"{server.server_ulid}:{sensor_type}:{value}:{data.server_time}"
+                    "server_ulid": server.server_ulid,
+                    "sensor_type": sensor_type,
+                    "value": str(value),
+                    "server_time": str(data.server_time),
                 }
-                print(f"{server.server_ulid}:{sensor_type}:{value}:{data.server_time}")
                 await redis.xadd(stream_key, message)
 
         sensor_data = OutputRegisterDataDTO(
@@ -78,7 +82,7 @@ class ServerService:
 
         return sensor_data
 
-    async def get_sensor_data(server_ulid: str):
+    async def generate_sensor_data(server_ulid: str) -> SensorDataDTO:
         server_time = datetime.now().isoformat()
 
         temperature = await SensorService.get_temperature()
@@ -86,20 +90,13 @@ class ServerService:
         voltage = await SensorService.get_voltage()
         current = await SensorService.get_current()
 
-        if not await ServerService.valite_sensor(
-            temperature, humidity, voltage, current
-        ):
-            raise ValueError("At least one sensor value must be provided")
-
-        sensor_data = OutputRegisterDataDTO(
-            server_ulid=server_ulid,
-            timestamp=server_time,
+        sensor_data = SensorDataDTO(
+            server_time=server_time,
             temperature=temperature,
             humidity=humidity,
             voltage=voltage,
             current=current,
         )
-
         return sensor_data
 
     async def get_sensor_data(
@@ -126,7 +123,7 @@ class ServerService:
         server = await ServerRepository.create_server(name, user)
         return server
 
-    async def server_time(server_ulid: str) -> datetime:
+    async def server_time(server_ulid: str) -> datetime | None:
         timestamp = await ServerRepository.get_server_timestamp(server_ulid)
         print(timestamp, "server_time time")
         return timestamp
@@ -145,8 +142,9 @@ class ServerService:
         server = await ServerRepository.get_server_by_id(id)
         return server
 
-    async def get_server_healht_by_id(server_id: str) -> OutputServerHealthDTO:
+    async def get_server_health_by_id(server_id: str) -> OutputServerHealthDTO:
         server = await ServerService.get_server_by_id(server_id)
+        print("antes do last", server.server_ulid)
         last_online = await ServerService.server_time(server.server_ulid)
         status = ServerService.server_health(last_online)
 
@@ -159,12 +157,12 @@ class ServerService:
 
     def server_health(last_online: datetime) -> str:
         current_time = datetime.now()
-        last_online_fmt = datetime.fromtimestamp(last_online)
-        print(last_online, "last no format")
+        last_online_fmt = datetime.strptime(last_online, "%Y-%m-%d %H:%M:%S")
+        print(current_time, "current")
         print(last_online_fmt, "last")
-        time_diff = (current_time - last_online_fmt).total_seconds()
+        time_diff = (last_online_fmt - current_time).total_seconds()
         print(time_diff)
-        if time_diff > 10:
+        if time_diff > 10000:
             return "offline"
         else:
             return "online"
@@ -174,14 +172,15 @@ class ServerService:
         server_list = await ServerService.list_server()
 
         for server in server_list:
-            server_health = await ServerService.get_server_healt_by_id(
+            server_health = await ServerService.get_server_health_by_id(
                 server["server_ulid"]
             )
+            print(server_health, "all server health")
             data.append(
                 OutputServerHealthDTO(
-                    server_ulid=server_health.ulid,
-                    status=server_health.status,
-                    server_name=server_health.name,
+                    server_ulid=server_health["server_ulid"],
+                    status=server_health["status"],
+                    server_name=server_health["server_name"],
                 ).model_dump()
             )
 

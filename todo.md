@@ -5,6 +5,9 @@ Criar outra classe ou worker para ficar executando as requisições para o servi
 utilizar a lógica de verificar ao menos um valor para para o zervidor
 
 
+docker exec -it dt-labs psql -U $PG_USER -d $PG_DB
+
+
 Prioridades para testes (do mais importante ao menos importante): *** verificar conexão com banco de dados git a
 
 Repository (Alta Prioridade)

@@ -1,32 +1,38 @@
+import asyncio
 from contextlib import asynccontextmanager
-from typing import Annotated
-from fastapi import Depends, FastAPI, security
+from typing import Optional
+from fastapi import FastAPI, security
 from starlette.middleware.base import BaseHTTPMiddleware
 from tortoise.contrib.fastapi import register_tortoise
 from dotenv import load_dotenv
-from app.api.core.redis import connect_redis, disconnect_redis
-from app.api.core.dependency import HTTPBearer
+from app.api.core.redis import connect_redis, disconnect_redis, process_sensor_data
 from app.middleware.auth_middleware import auth_middleware
 from app.api.endpoints import auth_router, server_router
-import os
+from app.config.db_config import db_config
+
+process_task: Optional[asyncio.Task] = None
+stop_event = asyncio.Event()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await connect_redis(app)
+
     yield
+
     await disconnect_redis(app)
 
 
 app = FastAPI(lifespan=lifespan)
+
 load_dotenv("../.env")
 app.add_middleware(BaseHTTPMiddleware, dispatch=auth_middleware)
 app.security = [security]
 
+
 register_tortoise(
     app,
-    db_url=f"postgres://{os.getenv('PG_USER')}:{os.getenv('PG_PASSWORD')}@localhost:5432/{os.getenv('PG_DB')}",
-    modules={"models": ["app.api.models"]},
+    config=db_config,
     generate_schemas=True,
     add_exception_handlers=True,
 )

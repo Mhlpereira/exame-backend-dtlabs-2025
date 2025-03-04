@@ -1,8 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
-
-from app.schemas.user_dto import OutputUserDTO
+from pydantic import BaseModel
 
 
 class OutputRegisterDataDTO(BaseModel):
@@ -35,3 +33,11 @@ class OutputServerHealthDTO(BaseModel):
     server_ulid: str
     status: str
     server_name: str
+
+
+class SensorDataDTO(BaseModel):
+    server_time: str
+    temperature: Optional[float] = None
+    humidity: Optional[float] = None
+    voltage: Optional[float] = None
+    current: Optional[float] = None

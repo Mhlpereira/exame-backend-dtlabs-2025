@@ -7,10 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse
 from datetime import datetime
 
-
-from app.api.core.redis import get_redis_client, process_sensor_data
+from app.api.core.redis import process_sensor_data
 from app.api.services.server_service import ServerService
-from app.middleware.frequency_rate_middleware import FrequencyRateMiddleware
 from app.middleware.get_id import get_user_id
 from app.schemas.server_dto import (
     CreateServerDTO,
@@ -21,24 +19,27 @@ from app.schemas.server_dto import (
 
 
 router = APIRouter(tags=["server"])
+
+
 stop_event = asyncio.Event()
+process_task: Optional[asyncio.Task] = None
 
 
 @router.post("/data")
-async def register_data(
-    server_ulid: str, redis=Depends(get_redis_client)
-) -> OutputRegisterDataDTO:
+async def register_data(server_ulid: str, request: Request) -> OutputRegisterDataDTO:
+    redis = request.app.state.redis
     global process_task
-    try:
-        confirmed_server = await ServerService.get_server_by_id(server_ulid)
 
-        if not confirmed_server:
+    stream_key = "sensor_data_stream"
+    process_task = asyncio.create_task(
+        process_sensor_data(redis, stream_key, stop_event)
+    )
+    try:
+        server = await ServerService.get_server_by_id(server_ulid)
+
+        if not server:
             raise HTTPException(status_code=404, detail="Server not found!")
 
-        if process_task and not process_task.done():
-            raise HTTPException(status_code=400, detail="Server already on!")
-        stop_event.clear()
-        process_task = asyncio.create_task(process_sensor_data(redis, stop_event))
         data = await ServerService.register_sensor_data(server_ulid, redis)
         return JSONResponse(content=data.model_dump(), status_code=201)
     except ValueError as e:
@@ -46,13 +47,10 @@ async def register_data(
 
 
 @router.post("/data/stop")
-async def server_stop(server_ulid: str):
-    if not process_task or process_task.done():
-        raise HTTPException(status_code=400, detail="Stream não está em execução.")
+async def server_stop():
     stop_event.set()
-    await process_task
-    server = await ServerService.get_server_by_id(server_ulid)
-    return {f"stoping server {server.server_name}"}
+    if process_task:
+        await process_task
 
 
 @router.get("/data")
@@ -102,7 +100,7 @@ async def get_server_healt_by_id(
     server_id: str,
     credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
 ) -> OutputServerHealthDTO:
-    server_health = await ServerService.get_server_healht_by_id(server_id)
+    server_health = await ServerService.get_server_health_by_id(server_id)
 
     return JSONResponse(content=server_health, status_code=200)
 

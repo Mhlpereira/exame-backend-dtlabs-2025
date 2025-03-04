@@ -33,10 +33,15 @@ async def auth_middleware(request: Request, call_next):
 
     token = auth_header.split(" ")[1]
 
+    secret_key = os.getenv("DT_SECRET")
+    if not secret_key:
+        logger.error("DT_SECRET is not set in environment variables")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
     try:
         payload = jwt.decode(
             token,
-            os.getenv("DT_SECRET"),
+            secret_key,
             algorithms="HS256",
         )
         request.state.user = payload
