@@ -44,5 +44,5 @@ class SensorDataDTO(BaseModel):
 
 
 class ListGetSensorDataDTO(BaseModel):
-    server_time: str
-    values: dict[str, float]
+    timestamp: str
+    values: dict[str, str]

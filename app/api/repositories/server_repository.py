@@ -87,15 +87,21 @@ class ServerRepository:
         connection = Tortoise.get_connection("default")
         try:
             filters = []
+            params = []
             if server_ulid:
-                filters.append(f"server_ulid = '{server_ulid}")
+                filters.append("server_ulid = $1")
+                params.append(server_ulid)
             if start_time and end_time:
-                filters.append(f"timestamp BETWEEN '{start_time}' AND '{end_time}")
+                filters.append("timestamp BETWEEN $2 AND $3")
+                params.extend([start_time, end_time])
             if sensor_type:
-                filters.append(f"sensor_type = '{sensor_type}'")
+                filters.append("sensor_type = $4")
+                params.append(sensor_type)
+
             query = "SELECT server_time , sensor_type , value FROM sensor_data"
             if filters:
                 query += " WHERE " + " AND ".join(filters)
+
             if aggregation:
                 if aggregation not in ["minute", "hour", "day"]:
                     raise HTTPException(
@@ -104,16 +110,17 @@ class ServerRepository:
 
                 interval = f"1 {aggregation}"
                 query = f"""
-                    SELECT time_bucket('{interval}'),server_time) AS bucket,
+                    SELECT time_bucket('{interval}',server_time) AS bucket,
                             sensor_type,
                             AVG(value) AS avg_value
                     FROM sensor_data
                     {"WHERE " + " AND ".join(filters) if filters else ""}
                     GROUP BY bucket, sensor_type
-                    ORBER BY bucket
+                    ORDER BY bucket
                 """
             query += " LIMIT 5"
-            results = await connection.execute_query(query)
-            return results
+            results = await connection.execute_query(query, params)
+            print(results, "dentro do repository")
+            return results[1]
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Error fetching data: {e}")

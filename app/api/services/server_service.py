@@ -1,4 +1,5 @@
 import asyncio
+from collections import defaultdict
 import datetime
 from typing import List, Optional
 
@@ -10,6 +11,7 @@ from app.api.repositories.server_repository import ServerRepository
 from app.api.services.sensor_service import SensorService
 from app.api.services.user_service import UserService
 from app.schemas.server_dto import (
+    ListGetSensorDataDTO,
     ListServerDTO,
     OutputRegisterDataDTO,
     OutputServerHealthDTO,
@@ -107,19 +109,42 @@ class ServerService:
         aggregation: Optional[str],
     ):
 
-        result = await ServerRepository.query_data(
+        results = await ServerRepository.query_data(
             server_ulid=server_ulid or None,
             start_time=start_time or None,
             end_time=end_time or None,
             sensor_type=sensor_type or None,
             aggregation=aggregation or None,
         )
-        list = []
+        print(results)
+        if aggregation:
+            grouped_data = defaultdict(dict)
 
-        for data in result:
-            list.append(data)
+            for result in results:
+                bucket = result["bucket"]
+                sensor_type = result["sensor_type"]
+                avg_value = result["avg_value"]
 
-        return list
+                grouped_data[bucket][sensor_type] = round(avg_value, 1)
+
+            data = [
+                {
+                    "timestamp": bucket.isoformat(),
+                    **sensors,
+                }
+                for bucket, sensors in grouped_data.items()
+            ]
+            return data
+        else:
+            data = [
+                ListGetSensorDataDTO(
+                    timestamp=str(result["server_time"]),
+                    values={str(result["sensor_type"]): str(result["server_time"])},
+                ).model_dump()
+                for result in results
+            ]
+            print("teste")
+            return data
 
     async def create_server(name: str, userId: str) -> ServerModel:
         if not name:
