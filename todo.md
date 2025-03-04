@@ -1,9 +1,3 @@
-Adicionar os cache (comecei a fazer pelo service de buscar o id do servidor)
-
-Criar outra classe ou worker para ficar executando as requisições para o servidor, mudar o tratamento ao invez de colocar um pacote de 10 na fila e enviar tudo de uma vez, ir disparando no máximo 10 por segundo e parar no valor
-
-utilizar a lógica de verificar ao menos um valor para para o zervidor
-
 
 docker exec -it dt-labs psql -U $PG_USER -d $PG_DB
 

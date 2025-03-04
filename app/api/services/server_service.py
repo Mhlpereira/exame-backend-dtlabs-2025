@@ -143,7 +143,6 @@ class ServerService:
                 ).model_dump()
                 for result in results
             ]
-            print("teste")
             return data
 
     async def create_server(name: str, userId: str) -> ServerModel:
@@ -155,7 +154,6 @@ class ServerService:
 
     async def server_time(server_ulid: str) -> datetime | None:
         timestamp = await ServerRepository.get_server_timestamp(server_ulid)
-        print(timestamp, "server_time time")
         return timestamp
 
     async def list_server() -> List[ListServerDTO]:
@@ -174,7 +172,6 @@ class ServerService:
 
     async def get_server_health_by_id(server_id: str) -> OutputServerHealthDTO:
         server = await ServerService.get_server_by_id(server_id)
-        print("antes do last", server.server_ulid)
         last_online = await ServerService.server_time(server.server_ulid)
         status = ServerService.server_health(last_online)
 
@@ -190,8 +187,6 @@ class ServerService:
             return "offline"
         current_time = datetime.now()
         last_online_fmt = datetime.strptime(last_online, "%Y-%m-%d %H:%M:%S")
-        print(current_time, "current")
-        print(last_online_fmt, "last")
         time_diff = (current_time - last_online_fmt).total_seconds()
         print(time_diff)
         if time_diff > 10000:
@@ -207,7 +202,6 @@ class ServerService:
             server_health = await ServerService.get_server_health_by_id(
                 server["server_ulid"]
             )
-            print(server_health, "all server health")
             data.append(
                 OutputServerHealthDTO(
                     server_ulid=server_health["server_ulid"],

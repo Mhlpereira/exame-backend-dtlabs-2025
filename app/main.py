@@ -39,16 +39,3 @@ register_tortoise(
 
 app.include_router(auth_router)
 app.include_router(server_router)
-
-
-@app.get("/")
-async def hellow():
-    print("Hellow")
-
-
-@app.get("/test-redis")
-async def test_redis():
-    redis = app.state.redis
-    await redis.set("test_key", "test_value")
-    value = await redis.get("test_key")
-    return {"value": value}

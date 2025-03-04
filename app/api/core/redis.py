@@ -16,7 +16,6 @@ async def connect_redis(app: FastAPI):
     app.state.redis = await Redis.from_url("redis://localhost:6379/0")
     try:
         await app.state.redis.ping()
-        logger.info("Conexão com Redis está funcionando.")
     except Exception as e:
         logger.error(f"Erro ao conectar ao Redis: {e}")
 
