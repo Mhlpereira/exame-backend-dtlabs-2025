@@ -30,17 +30,17 @@ async def register_data(server_ulid: str, request: Request) -> OutputRegisterDat
     redis = request.app.state.redis
     global process_task
 
-    stream_key = "sensor_data_stream"
-    process_task = asyncio.create_task(
-        process_sensor_data(redis, stream_key, stop_event)
-    )
     try:
         server = await ServerService.get_server_by_id(server_ulid)
 
+        stream_key = "sensor_data_stream"
+        process_task = asyncio.create_task(
+            process_sensor_data(redis, stream_key, stop_event)
+        )
         if not server:
             raise HTTPException(status_code=404, detail="Server not found!")
 
-        data = await ServerService.register_sensor_data(server_ulid, redis)
+        data = await ServerService.register_sensor_data(server_ulid, redis, stream_key)
         return JSONResponse(content=data.model_dump(), status_code=201)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

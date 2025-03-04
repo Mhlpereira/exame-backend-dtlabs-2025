@@ -10,5 +10,4 @@ start-server:
 seed-db:
 	python -m app.script.seed
 
-stop-server:
-	pkill -f "uvicorn app.main:app"
+run: docker start-server seed-db

@@ -55,7 +55,6 @@ class ServerRepository:
                     status_code=500, detail="Database connection not initialized"
                 )
             server_time_fmt = datetime.fromisoformat(server_time)
-            print("salvou a data")
             await connection.execute_query(
                 "INSERT INTO sensor_data (server_ulid, sensor_type, value, server_time) VALUES ($1, $2, $3, $4)",
                 [server_ulid, sensor_type, value, server_time_fmt],

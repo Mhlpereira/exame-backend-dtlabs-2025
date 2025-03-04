@@ -44,7 +44,7 @@ class ServerService:
         )
 
     async def register_sensor_data(
-        id: str, stream_key: str, redis: Redis
+        id: str, redis: Redis, stream_key
     ) -> OutputRegisterDataDTO:
         server = await ServerService.get_server_by_id(id)
 
