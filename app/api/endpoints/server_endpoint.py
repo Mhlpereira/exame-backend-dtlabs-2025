@@ -46,13 +46,6 @@ async def register_data(server_ulid: str, request: Request) -> OutputRegisterDat
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.post("/data/stop")
-async def server_stop():
-    stop_event.set()
-    if process_task:
-        await process_task
-
-
 @router.get("/data")
 async def get_sensor_data(
     server_ulid: Optional[str] = Query(None),
@@ -63,12 +56,12 @@ async def get_sensor_data(
     credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
 ):
 
-    data = await ServerService(
-        server_ulid=server_ulid,
-        start_time=start_time,
-        end_time=end_time,
-        sensor_type=sensor_type,
-        aggregation=aggregation,
+    data = await ServerService.get_sensor_data(
+        server_ulid=server_ulid or None,
+        start_time=start_time or None,
+        end_time=end_time or None,
+        sensor_type=sensor_type or None,
+        aggregation=aggregation or None,
     )
     return JSONResponse(content=data, status_code=200)
 

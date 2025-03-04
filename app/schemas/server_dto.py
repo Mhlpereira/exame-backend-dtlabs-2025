@@ -41,3 +41,8 @@ class SensorDataDTO(BaseModel):
     humidity: Optional[float] = None
     voltage: Optional[float] = None
     current: Optional[float] = None
+
+
+class ListGetSensorDataDTO(BaseModel):
+    server_time: str
+    values: dict[str, float]

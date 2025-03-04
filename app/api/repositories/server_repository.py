@@ -27,6 +27,10 @@ class ServerRepository:
                 "SELECT server_time FROM sensor_data WHERE server_ulid = $1 ORDER BY server_time DESC LIMIT 1",
                 [server_id],
             )
+
+            if not result[1]:  # Se a lista de resultados estiver vazia
+                return None
+
             server_time_record = result[1][0]
             print(server_time_record, "server_time dentro do repository")
             server_time = server_time_record["server_time"]
@@ -108,6 +112,7 @@ class ServerRepository:
                     GROUP BY bucket, sensor_type
                     ORBER BY bucket
                 """
+            query += " LIMIT 5"
             results = await connection.execute_query(query)
             return results
         except Exception as e:

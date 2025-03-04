@@ -107,14 +107,19 @@ class ServerService:
         aggregation: Optional[str],
     ):
 
-        data = await ServerRepository(
-            server_ulid=server_ulid,
-            start_time=start_time,
-            end_time=end_time,
-            sensor_type=sensor_type,
-            aggregation=aggregation,
+        result = await ServerRepository.query_data(
+            server_ulid=server_ulid or None,
+            start_time=start_time or None,
+            end_time=end_time or None,
+            sensor_type=sensor_type or None,
+            aggregation=aggregation or None,
         )
-        return data
+        list = []
+
+        for data in result:
+            list.append(data)
+
+        return list
 
     async def create_server(name: str, userId: str) -> ServerModel:
         if not name:
@@ -156,11 +161,13 @@ class ServerService:
         return server_health
 
     def server_health(last_online: datetime) -> str:
+        if last_online is None:
+            return "offline"
         current_time = datetime.now()
         last_online_fmt = datetime.strptime(last_online, "%Y-%m-%d %H:%M:%S")
         print(current_time, "current")
         print(last_online_fmt, "last")
-        time_diff = (last_online_fmt - current_time).total_seconds()
+        time_diff = (current_time - last_online_fmt).total_seconds()
         print(time_diff)
         if time_diff > 10000:
             return "offline"
