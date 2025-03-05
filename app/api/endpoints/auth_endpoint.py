@@ -13,7 +13,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 async def create_user(data: CreateUserDTO) -> OutputUserDTO:
     user = await UserService.create_user(data.email, data.password)
 
-    data = OutputUserDTO(email=user.email).model_dump()
+    data = OutputUserDTO(id=user.id, email=user.email).model_dump()
     return JSONResponse(content=data, status_code=201)
 
 

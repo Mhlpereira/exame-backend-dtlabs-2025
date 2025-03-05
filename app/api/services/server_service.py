@@ -188,8 +188,7 @@ class ServerService:
         current_time = datetime.now()
         last_online_fmt = datetime.strptime(last_online, "%Y-%m-%d %H:%M:%S")
         time_diff = (current_time - last_online_fmt).total_seconds()
-        print(time_diff)
-        if time_diff > 10000:
+        if time_diff > 10:
             return "offline"
         else:
             return "online"

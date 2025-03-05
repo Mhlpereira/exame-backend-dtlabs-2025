@@ -15,6 +15,7 @@ class CreateUserDTO(BaseModel):
 
 
 class OutputUserDTO(BaseModel):
+    id: str
     email: str
 
 

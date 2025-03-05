@@ -10,6 +10,11 @@ services:
       POSTGRES_DB: ${PG_DB}
     ports:
       - 5432:5432
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"] 
+      interval: 15s
+      timeout: 1s 
+      retries: 5
     volumes:
       - timescale_data:/var/lib/postgresql/data
       - ./init-timescale.sql:/docker-entrypoint-initdb.d/init-timescale.sql
@@ -22,20 +27,6 @@ services:
       - 6379:6379
     volumes:
       - redis_data:/data
-
-  dt-test:
-    image: timescale/timescaledb-ha:pg15
-    container_name: test
-    env_file:
-      - .env
-    environment:
-      POSTGRES_PASSWORD: test
-      POSTGRES_USER: test
-      POSTGRES_DB: test
-    ports:
-      - 54323:54323
-    volumes:
-      - ./init-timescale.sql:/docker-entrypoint-initdb.d/init-timescale.sql
 
 volumes:
   timescale_data:

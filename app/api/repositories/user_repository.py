@@ -38,8 +38,3 @@ class UserRepository:
                 status_code=404,
                 detail="User not found",
             )
-        except Exception as e:
-            raise HTTPException(
-                status_code=500,
-                detail=f"An error occurred while fetching the user by ID {e}",
-            )
