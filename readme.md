@@ -4,27 +4,32 @@
 **Environment variables are already set!**
 
 ## Subir o Docker / Start Docker
+Este comando sobe o PostgreSQL e o Redis.
+This command starts PostgreSQL and Redis.
+
 ```sh
-# Este comando sobe o PostgreSQL e o Redis.
+
 make docker
 
-# This command starts PostgreSQL and Redis.
 ```
 
 ## Iniciar o servidor e criar as tabelas com o Turtle ORM / Start the Server and Create Tables with Turtle ORM
+Este comando inicia o servidor Uvicorn.
+This command starts the Uvicorn server.
+
 ```sh
-# Este comando inicia o servidor Uvicorn.
+
 make start-server
 
-# This command starts the Uvicorn server.
 ```
 
 ## Popular o banco de dados com dados básicos / Seed the Database with Basic Data
+Este comando alimenta o banco de dados com dados pré-definidos para auxiliar nos testes.
+This command seeds the database with predefined data to assist in testing.
 ```sh
-# Este comando alimenta o banco de dados com dados pré-definidos para auxiliar nos testes.
+
 make seed-db
 
-# This command seeds the database with predefined data to assist in testing.
 ```
 
 ## Registrar um usuário / Register a User
@@ -63,7 +68,9 @@ Você pode se autenticar utilizando este token:
 You can authenticate using this token:
 ```sh
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMUpOSjhIQ0hSV0RLNjIzN0RWTjRDSzFaMiIsImVtYWlsIjoiZXhhbXBsZTJAZXhhbXBsZS5jb20ifQ.Pnf4u7Ty0I0yoeNHrdVKU6v1btziSAdbwIKqfuxvTOk
+
 ```
+![Image](https://github.com/user-attachments/assets/996f0213-89c5-4455-8d31-4edd0263f342)
 
 Ou gere um novo token registrando-se e fazendo login.
 Pegue o token e autentique-se no canto superior direito da página.  
@@ -71,18 +78,31 @@ Pegue o token e autentique-se no canto superior direito da página.
 Or generate a new token by registering and logging in.
 Retrieve the token and authenticate at the top-right of the page.
 
+![Image](https://github.com/user-attachments/assets/633e8961-cf88-476b-810d-9f36202d5526)
+
+![Image](https://github.com/user-attachments/assets/0df45ca4-5253-4e4f-a38f-fbc0db5cff38)
+
 ## Registro de Sensores / Sensor Registration
 ```sh
 # Coloque esta chave no campo de registro de dados para capturar as leituras dos sensores e enviá-las ao banco de dados.
 # Place this key in the data registration field to capture sensor readings and send them to the database.
 Server_ULID: 01JN4HCDW7ZF0TFMXWKRFV06GG
 ```
+![Image](https://github.com/user-attachments/assets/b571855a-9f37-4bbc-80d2-89a78979f691)
 
 Após isso, utilize a verificação de integridade para conferir se o servidor está online ou offline.  
 Também é possível verificar todos os servidores registrados.
 
 After that, use the health check to verify if the server is online or offline. 
 You can also check all registered servers.
+
+Check por id
+
+![Image](https://github.com/user-attachments/assets/1ed1517c-c913-4dae-8d87-bf2eb039c037)
+
+Check all 
+
+![Image](https://github.com/user-attachments/assets/c56b4619-0830-4772-998f-91d9901bb68a)
 
 ## Filtragem de Dados dos Sensores / Filtering Sensor Data
 
@@ -97,6 +117,8 @@ To perform custom searches, use the sensor query endpoint.
 # Use this Server ULID or generate a new one for testing.
 Server_ULID: 01JN4HCDW7ZF0TFMXWKRFV06GG
 ```
+
+![Image](https://github.com/user-attachments/assets/1104322f-ab8a-4374-bdf3-ef8f12189d9f)
 
 Formato para `start` ou `end`:
 
