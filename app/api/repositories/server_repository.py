@@ -14,7 +14,7 @@ class ServerRepository:
             server = await ServerModel.get(server_ulid=id)
             return server
         except Exception as e:
-            raise HTTPException(status_code=404, detail=f"User not found{e}")
+            raise HTTPException(status_code=404, detail=f"Server not found{e}")
 
     async def get_server_timestamp(server_id) -> datetime | None:
         try:
@@ -28,13 +28,11 @@ class ServerRepository:
                 [server_id],
             )
 
-            if not result[1]:  # Se a lista de resultados estiver vazia
+            if not result[1]:
                 return None
 
             server_time_record = result[1][0]
-            print(server_time_record, "server_time dentro do repository")
             server_time = server_time_record["server_time"]
-            print(server_time, "primeiro")
             server_time_iso = server_time.strftime("%Y-%m-%d %H:%M:%S")
             return server_time_iso
         except Exception as e:
@@ -68,6 +66,11 @@ class ServerRepository:
             raise HTTPException(status_code=400, detail=f"Error saving data: {e}")
 
     async def create_server(name: str, user: UserModel) -> ServerModel:
+        if user == None:
+            raise HTTPException(
+                status_code=404, detail=f"You must be logged in to create a server"
+            )
+
         try:
             id = str(ulid.new())
             server = await ServerModel.create(

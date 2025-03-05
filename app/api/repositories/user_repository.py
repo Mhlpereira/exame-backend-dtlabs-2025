@@ -8,6 +8,10 @@ class UserRepository:
 
     async def create_user(email: str, hash_password: str) -> UserModel:
         id = str(ulid.new())
+        if not email:
+            raise HTTPException(status_code=404, detail="Null or missing email")
+        if not hash_password:
+            raise HTTPException(status_code=404, detail="Null or missing password")
         try:
             user = await UserModel.create(id=id, email=email, password=hash_password)
             return user
@@ -21,7 +25,7 @@ class UserRepository:
         except Exception as e:
             raise HTTPException(
                 status_code=404,
-                detail="An error occurred while fetching the user by email.",
+                detail="An error occurred while fetching the user by email",
             )
 
     async def get_user_by_id(id: str) -> UserModel:
@@ -32,10 +36,10 @@ class UserRepository:
         except HTTPException:
             raise HTTPException(
                 status_code=404,
-                detail="User not found.",
+                detail="User not found",
             )
         except Exception as e:
             raise HTTPException(
                 status_code=500,
-                detail=f"An error occurred while fetching the user by ID. {e}",
+                detail=f"An error occurred while fetching the user by ID {e}",
             )
