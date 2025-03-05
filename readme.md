@@ -1,117 +1,118 @@
-# Comece por aqui
+# Comece por aqui / Start Here
 
+**As variáveis de ambiente já estão adicionadas!**  
+**Environment variables are already set!**
 
-***As variaveis de ambiente já estão adicionadas!!***
-
-
-### Suba o docker 
-```
-Este comando você sobe o postgreSQL e o redis.
+## Subir o Docker / Start Docker
+```sh
+# Este comando sobe o PostgreSQL e o Redis.
 make docker
+
+# This command starts PostgreSQL and Redis.
 ```
 
-### Utilize esse comando para iniciar o servidor e criar as tabelas com o turtle orm
-```
-Este comando você inicia o servidor uvicorne
+## Iniciar o servidor e criar as tabelas com o Turtle ORM / Start the Server and Create Tables with Turtle ORM
+```sh
+# Este comando inicia o servidor Uvicorn.
 make start-server
+
+# This command starts the Uvicorn server.
 ```
 
-### Execute para alimentar o banco de dados com dados básicos para melhor funcionamento do makefile
-
-```
-Este comando você alimenta o banco de dados com dados pré definidos para auxiliar nos testes!
+## Popular o banco de dados com dados básicos / Seed the Database with Basic Data
+```sh
+# Este comando alimenta o banco de dados com dados pré-definidos para auxiliar nos testes.
 make seed-db
+
+# This command seeds the database with predefined data to assist in testing.
 ```
 
-### Registre um usuario 
-```
+## Registrar um usuário / Register a User
+```sh
 make register-user
 ```
 
-### Logue no sistema
-
+## Fazer login no sistema / Login to the System
+```sh
+make login
 ```
-make Login
-```
 
-### Crie o servidor Dolly#3
-
-```
+## Criar o servidor Dolly#3 / Create the Dolly#3 Server
+```sh
 make create-server
 ```
 
-## Registre o sensor 10 vezes
-
-```
+## Registrar o sensor 10 vezes / Register the Sensor 10 Times
+```sh
 make 10-register-data
 ```
 
-## Execute os testes
-
+## Executar os testes / Run Tests
+```sh
+make pytest
 ```
-make pyteste
-```
 
-### Consulta de dados
+## Consultar dados / Query Data
 
-**Utilize esse link para ver a documentação por swagger e por ela pode ser feita as consultas.**
+**Utilize este link para acessar a documentação Swagger e realizar consultas.**  
+**Use this link to access the Swagger documentation and perform queries.**  
 
-http://127.0.0.1:8000/docs/
+[http://127.0.0.1:8000/docs/](http://127.0.0.1:8000/docs/)
 
-
-```
-Você pode se autenticar utlizando este token:
+Você pode se autenticar utilizando este token:  
+You can authenticate using this token:
+```sh
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMUpOSjhIQ0hSV0RLNjIzN0RWTjRDSzFaMiIsImVtYWlsIjoiZXhhbXBsZTJAZXhhbXBsZS5jb20ifQ.Pnf4u7Ty0I0yoeNHrdVKU6v1btziSAdbwIKqfuxvTOk
-
-<img src="/public/swagger.png" width="600">
-
-ou você pode gerar um token novo se registrando e logando para se autenticar!
-Recomendo que não altere o corpo da requisição para não precisar alterar nada na hora de logar.
-
-<img src="/public/register-data.png" width="600">
-
-Pegue o token e se autentique no topo superior direito da página!
-
-<img src="/public/token.png" width="600">
-
 ```
 
-## Register
-```
-Coloque essa cahve no campo do register data para pegar os dados do sensores e enviar para o banco de dados.
-Server_ULID:
-01JN4HCDW7ZF0TFMXWKRFV06GG
-<img src="/public/register-data.png" width="600">
+Ou gere um novo token registrando-se e fazendo login.
+Pegue o token e autentique-se no canto superior direito da página.  
+ 
+Or generate a new token by registering and logging in.
+Retrieve the token and authenticate at the top-right of the page.
 
-Após isso no campo de health check, você podera verificar se o servidor está online ou offline.
-
-<img src="/public/health-id.png" width="600">
-
-Também pode verificar todos servidores!
-<img src="/public/server-health-check.png" width="600">
+## Registro de Sensores / Sensor Registration
+```sh
+# Coloque esta chave no campo de registro de dados para capturar as leituras dos sensores e enviá-las ao banco de dados.
+# Place this key in the data registration field to capture sensor readings and send them to the database.
+Server_ULID: 01JN4HCDW7ZF0TFMXWKRFV06GG
 ```
 
+Após isso, utilize a verificação de integridade para conferir se o servidor está online ou offline.  
+Também é possível verificar todos os servidores registrados.
 
+After that, use the health check to verify if the server is online or offline. 
+You can also check all registered servers.
+
+## Filtragem de Dados dos Sensores / Filtering Sensor Data
+
+Para realizar buscas personalizadas, utilize o endpoint de consulta de sensores.  
+To perform custom searches, use the sensor query endpoint.
+
+**Observação:** Os sensores precisam estar registrados antes da consulta.  
+**Note:** Sensors must be registered before querying.
+
+```sh
+# Utilize este Server ULID ou gere um novo para testes.
+# Use this Server ULID or generate a new one for testing.
+Server_ULID: 01JN4HCDW7ZF0TFMXWKRFV06GG
 ```
-No get sensor data personalizada você pode filtrar suas buscas! 
-Obs: Tem que ter gerado o registro dos sensores [Register](#register)
 
-<img src="/public/agregation.png" width="600">
+Formato para `start` ou `end`:
 
-Utilize esse server ULID mas você pode gerar outros para fazer seus testes:
-01JN4HCDW7ZF0TFMXWKRFV06GG
-
-Utile esse formato para start ou end:
-"2025-03-05T01:55:07.596458" 
-
-Temos 4 tipos de sensores:
-- temperature
-- humidity
-- current
-- voltage
-
-Granularidade da agregação:
-- minute
-- hour
-- day
+Format for `start` or `end`:
+```sh
+"2025-03-05T01:55:07.596458"
 ```
+
+### Tipos de Sensores / Sensor Types
+- Temperature
+- Humidity
+- Current
+- Voltage
+
+### Granularidade da Agregação / Aggregation Granularity
+- Minute
+- Hour
+- Day
+

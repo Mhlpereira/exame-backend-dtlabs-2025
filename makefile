@@ -43,6 +43,7 @@ create-server:
 	  -H "Content-Type: application/json" \
 	  -d "{\"server_ulid\": \"$(SERVER_ID)\"}" \
 	  -s -o /dev/null -w "Requisition $$i: %{time_total}s\n"; \
+	  sleep1\
 	done; \
 	END=$$(date +%s); \
 	echo "Total time: $$((END - START)) secs"
